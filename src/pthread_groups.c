@@ -39,12 +39,13 @@ struct ThreadGroup* create_thread_group(void* (**t_targets)(void *),void* restri
 	tg->size = (unsigned int)tn;
 	pthread_mutex_unlock(&count_lock);
 	for(i=0; i<tn;i++){
-		printf("Creating thread number %d\n",i);
+		printf("Creating thread number %ld\n",i);
 		tmp_info.thread_num = i;
-		ret = pthread_create(&tmp_thread,NULL,t_targets[i],NULL);
+		ret = pthread_create(&tmp_thread,NULL,t_targets[i],(void*)(args+i));
 		if (ret != 0){
 			handle_error("pthread_create");
 		}
+		printf("Created thread number %ld\n",i);
 		tmp_info.thread_id = tmp_thread;
 		tg->t_comps[i] = tmp_info;
 
