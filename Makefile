@@ -4,6 +4,7 @@ BUILD_PATH := build
 CFLAGS += -Wall -std=c99 -pedantic -lpthread -Iinclude
 SOURCES:= $(foreach dir,$(SRC_PATH),$(wildcard $(SRC_PATH)/*.c $(dir)/*.c))
 OBJECTS = $(SOURCES:%.c=%.o)
+OBJECTS := $(subst $(SRC_PATH),$(BUILD_PATH),$(OBJECTS))
 DEPS = $(SOURCES:%.c=%.d)
 
 $(info ${SOURCES})
