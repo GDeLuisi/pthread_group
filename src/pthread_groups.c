@@ -14,25 +14,25 @@
 
 int tg_count = 0; /*Keeps count of the created thread groups*/
 
-struct t_info {
+typedef struct ThreadInfo {
 	pthread_t thread_id;
 	int thread_num;
-};
+}t_info;
 
-struct ThreadGroup {
+typedef struct ThreadGroup{
 	int groupId;
 	unsigned int size;
-	struct t_info t_comps[];
-};
+	t_info t_comps[];
+}p_threadgroup;
 
 static pthread_mutex_t count_lock = PTHREAD_MUTEX_INITIALIZER;
 
-struct ThreadGroup* create_thread_group(void* (**t_targets)(void *),void* restrict args[],size_t tn){
+ p_threadgroup* create_thread_group(void* (**t_targets)(void *),void* restrict args[],size_t tn){
 	size_t i;
-	struct ThreadGroup *tg = malloc(sizeof(*tg) + sizeof(struct t_info)*tn);
+	 p_threadgroup *tg = malloc(sizeof(*tg) + sizeof( t_info)*tn);
 	int ret;
 	pthread_t tmp_thread;
-	struct t_info tmp_info;
+	 t_info tmp_info;
 	pthread_mutex_lock(&count_lock);
 	printf("Creating threadgroup %d\n",tg_count);
 	tg->groupId = tg_count++;
@@ -53,7 +53,7 @@ struct ThreadGroup* create_thread_group(void* (**t_targets)(void *),void* restri
 	return tg;
 }
 
-int cancel_thread_group(struct ThreadGroup* tg){
+int cancel_thread_group( p_threadgroup* tg){
 
 	size_t len = tg->size;
 	size_t i;
@@ -67,7 +67,7 @@ int cancel_thread_group(struct ThreadGroup* tg){
 	return 0;
 }
 
-int join_thread_group(struct ThreadGroup* tg){
+int join_thread_group( p_threadgroup* tg){
 		size_t len = tg->size;
 		size_t i;
 		int res;
