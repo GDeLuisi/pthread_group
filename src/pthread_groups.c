@@ -14,6 +14,8 @@
 
 int tg_count = 0; /*Keeps count of the created thread groups*/
 
+typedef void* ( *target )( void *);
+
 typedef struct ThreadInfo {
 	pthread_t thread_id;
 	int thread_num;
@@ -27,7 +29,7 @@ typedef struct ThreadGroup{
 
 static pthread_mutex_t count_lock = PTHREAD_MUTEX_INITIALIZER;
 
- p_threadgroup* create_thread_group(void* (**t_targets)(void *),void* restrict args[],size_t tn){
+ p_threadgroup* create_thread_group(target t_targets[] ,void* restrict args[],size_t tn){
 	size_t i;
 	 p_threadgroup *tg = malloc(sizeof(*tg) + sizeof( t_info)*tn);
 	int ret;
