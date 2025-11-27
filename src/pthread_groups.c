@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
+//#define DEBUG
+#include "debug.h"
 
 #define EXIT_FAILURE 1
 #define handle_error_en(en, msg) \
@@ -36,18 +38,18 @@ static pthread_mutex_t count_lock = PTHREAD_MUTEX_INITIALIZER;
 	pthread_t tmp_thread;
 	 t_info tmp_info;
 	pthread_mutex_lock(&count_lock);
-	printf("Creating threadgroup %d\n",tg_count);
+	dprint("Creating threadgroup %d\n",tg_count);
 	tg->groupId = tg_count++;
 	tg->size = (unsigned int)tn;
 	pthread_mutex_unlock(&count_lock);
 	for(i=0; i<tn;i++){
-		printf("Creating thread number %ld\n",i);
+		dprint("Creating thread number %ld\n",i);
 		tmp_info.thread_num = i;
 		ret = pthread_create(&tmp_thread,NULL,t_targets[i],(void*)(args+i));
 		if (ret != 0){
 			handle_error("pthread_create");
 		}
-		printf("Created thread number %ld\n",i);
+		dprint("Created thread number %ld\n",i);
 		tmp_info.thread_id = tmp_thread;
 		tg->t_comps[i] = tmp_info;
 

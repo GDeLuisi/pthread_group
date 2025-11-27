@@ -1,15 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "colors.h"
 
 #ifdef TEST_SUITE_ON
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
 #define BEGIN_TESTS int main(int argc,char *argv[]){ unsigned int test_counter = 0;unsigned int test_passed = 0;
 #define TEST_ASSERTION(OUTPUT,EXPECTED_VALUE) if(OUTPUT == EXPECTED_VALUE)\
 	{ printf(ANSI_COLOR_GREEN "_____ Test passed _____"ANSI_COLOR_RESET "\n");\

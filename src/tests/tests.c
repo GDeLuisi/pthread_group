@@ -4,8 +4,9 @@
 #include "pthread_groups.h"
 #include <unistd.h>
 #define TEST_SUITE_ON 
+//#define DEBUG
 #include "test_framework.h"
-
+#include "debug.h"
 typedef void* ( *target )( void *);
 void* test_func(void* arg){
 	int * val_arg = (int*)arg;
@@ -24,7 +25,7 @@ TEST("threadgroup_creation"){
 	t_targets[2] = &test_func;
 	struct ThreadGroup* tg = create_thread_group(t_targets,my_target_args,3);
 	unsigned int size = tg->size;
-	printf("Tg size %u\n",size);
+	dprint("Tg size %u\n",size);
 	join_thread_group(tg);
 	TEST_ASSERTION(0,0);
 }
@@ -37,7 +38,7 @@ TEST("failing_test"){
 	t_targets[2] = &test_func;
 	struct ThreadGroup* tg = create_thread_group(t_targets,my_target_args,3);
 	unsigned int size = tg->size;
-	printf("Tg size %u\n",size);
+	dprint("Tg size %u\n",size);
 	join_thread_group(tg);
 	TEST_ASSERTION(0,0);
 }
