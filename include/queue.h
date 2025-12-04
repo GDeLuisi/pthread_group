@@ -2,8 +2,46 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Queue queue;
+#ifdef THREADSAFE
+#define THREADSAFE_ACTIVE 1
+#else
+#define THREADSAFE_ACTIVE 0
+#endif
 
+#define acquire_lock(lock)\
+do { \
+	if (THREADSAFE_ACTIVE){\
+	int r = pthread_mutex_lock(lock);\
+	if (r!=0){printf("Lock not acquired, error %d",r) ;return r;} \
+	}\
+}while (0)
+
+#define release_lock(lock)\
+do { \
+	if (THREADSAFE_ACTIVE){\
+	int r = pthread_mutex_unlock(lock);\
+	if (r!=0){printf("Lock not acquired, error %d",r) ;return r;} \
+	}\
+}while (0)
+
+#define condition_wait(cond,lock)\
+do { \
+	if (THREADSAFE_ACTIVE){\
+	int r = pthread_cond_wait(cond,lock);\
+	if (r!=0){printf("Lock not acquired, error %d",r) ;return r;} \
+	}\
+}while (0)
+
+#define condition_signal(cond)\
+do { \
+	if (THREADSAFE_ACTIVE){\
+	int r = pthread_cond_signal(cond);\
+	if (r!=0){printf("Lock not acquired, error %d",r) ;return r;} \
+	}\
+}while (0)
+
+
+typedef struct Queue queue;
 /**
  * @param allocSize Size of elements inserted
  * @return queue on success, NULL on error

@@ -1,3 +1,4 @@
+#define THREADSAFE
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -9,6 +10,30 @@
 #include "test_framework.h"
 #include "debug.h"
 typedef void* ( *target )( void *);
+
+void* test_threading_queue_consumer(void* arg){
+	queue * q = (queue*)arg;
+	int ret_val;
+	printf("Trying to pull from queue\n");
+	dequeue(q,&ret_val);
+	printf("Pulled %d from queue\n",ret_val);
+	return &ret_val;
+}
+
+void* test_threading_queue_producer(void* arg){
+	queue * q = (queue*)arg;
+	int push_val = 10;
+	printf("Trying to push on queue\n");
+//	sleep(3);
+	enqueue(q,&push_val);
+	printf("Pushed %d to queue\n",push_val);
+	push_val = 7;
+	printf("Pushing %d to queue\n",push_val);
+	enqueue(q,&push_val);
+	printf("Pushed %d to queue\n",push_val);
+	return &push_val;
+}
+
 void* test_func(void* arg){
 	int * val_arg = (int*)arg;
 	pthread_t self_id = pthread_self();
@@ -78,6 +103,31 @@ TEST("queue_creation"){
 	dprint("Peek value: %d\n",ret_value);
 	TEST_ASSERTION(ret_value,25)
 	destroyQueue(&q);
+}
+TEST("threaded_queue"){
+	queue* qt = createQueue(sizeof(int));
+
+	pthread_t cons_thread;
+	pthread_t prod_thread;
+	int res;
+
+	res = pthread_create(&cons_thread,NULL,&test_threading_queue_consumer,qt);
+	if(res != 0){
+		printf("Thread consumer creation returned an error");
+		return res;
+	}
+	res = pthread_create(&prod_thread,NULL,&test_threading_queue_producer,qt);
+	if(res != 0){
+		printf("Thread producer creation returned an error");
+		return res;
+	}
+//	sleep(10);
+	pthread_join(cons_thread,NULL);	
+	pthread_join(prod_thread,NULL);	
+  front(qt,&res);
+	printf("Received %d from front\n",res);
+  destroyQueue(&qt);
+	TEST_ASSERTION(7,res)
 }
 END_TESTS;
 
