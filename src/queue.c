@@ -11,7 +11,7 @@ pthread_cond_t empty_condition = PTHREAD_COND_INITIALIZER;
 typedef struct Node
 {
   void *data;
-  struct node *next;
+  struct Node *next;
 } node;
 
 node *createNode(void *data, size_t allocSize)
