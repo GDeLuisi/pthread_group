@@ -5,8 +5,6 @@
 #include <string.h>
 #include <pthread.h>
 
-pthread_mutex_t mutex_lock = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t empty_condition = PTHREAD_COND_INITIALIZER;
 
 typedef struct Node
 {
@@ -41,6 +39,8 @@ node *createNode(void *data, size_t allocSize)
 
 typedef struct Queue
 {
+	pthread_mutex_t mutex_lock;
+	pthread_cond_t empty_condition;
   size_t size;
   size_t allocationSize;
   node *head;
@@ -60,6 +60,8 @@ queue *createQueue(size_t allocSize)
 		q->allocationSize = allocSize;
   q->size = 0;
   q->head = q->tail = NULL;
+	int res = pthread_mutex_init(&(q->mutex_lock),NULL); 
+	res = pthread_cond_init(&(q->empty_condition),NULL);
   return q;
 }
 
@@ -77,7 +79,7 @@ queue *enqueue(queue *q, void *data)
     return NULL;
   }
 
-	acquire_lock(&mutex_lock);
+	acquire_lock(&(q->mutex_lock));
 	dprint("Queue size before enqueue: %ld\n",q->size);
 	if(q->size == 0)
 	{ // First insertion
@@ -90,8 +92,8 @@ queue *enqueue(queue *q, void *data)
 	}
 
 	q->size++;
-	release_lock(&mutex_lock);
-	condition_signal(&empty_condition);
+	release_lock(&(q->mutex_lock));
+	condition_signal(&(q->empty_condition));
 	dprint("Allocated node: %ld\n",q->size);
 
 	return q;
@@ -104,12 +106,12 @@ queue *dequeue(queue *q, void *data)
 		return NULL;
 	}
 
-	acquire_lock(&mutex_lock);
+	acquire_lock(&(q->mutex_lock));
 	dprint("Queue size before enqueue: %ld\n",q->size);
 	while (q->size == 0)
 	{
 		dprint("Queue size is %ld, waiting\n",q->size);
-		condition_wait(&empty_condition,&mutex_lock);
+		condition_wait(&(q->empty_condition),&(q->mutex_lock));
 		dprint("Queue size is %ld, resuming\n",q->size);
 	}
 	node *toDel = q->head;
@@ -129,7 +131,7 @@ queue *dequeue(queue *q, void *data)
 		q->size--;
 	}
 	dprint("Releasing dequeue lock with size %ld\n",q->size);
-	release_lock(&mutex_lock);
+	release_lock(&(q->mutex_lock));
 	return q;
 	}
 
@@ -146,10 +148,10 @@ queue *dequeue(queue *q, void *data)
 		}
 
 		dprint("Acquire lock %ld\n",q);
-		acquire_lock(&mutex_lock);
+		acquire_lock(&(q->mutex_lock));
 		memcpy(data, q->head->data, q->allocationSize);
 
-		release_lock(&mutex_lock);
+		release_lock(&(q->mutex_lock));
 		return q;
 	}
 
@@ -161,7 +163,7 @@ queue *dequeue(queue *q, void *data)
 			return q; // Nonthing to reverse
 		void *data = malloc(q->allocationSize);
 
-		acquire_lock(&mutex_lock);
+		acquire_lock(&(q->mutex_lock));
 		if(data != NULL)
 		{
 			dequeue(q, data);
@@ -169,7 +171,7 @@ queue *dequeue(queue *q, void *data)
 			enqueue(q, data);
 			free(data);
 		}
-		release_lock(&mutex_lock);
+		release_lock(&(q->mutex_lock));
 		return q;
 	}
 
@@ -180,7 +182,7 @@ queue *dequeue(queue *q, void *data)
 			return NULL;
 		}
 
-		acquire_lock(&mutex_lock);
+		acquire_lock(&(q->mutex_lock));
 		while(!isEmpty(q))
 		{
 			node *temp = q->head;
@@ -190,7 +192,7 @@ queue *dequeue(queue *q, void *data)
 			q->size--;
 		}
 
-		release_lock(&mutex_lock);
+		release_lock(&(q->mutex_lock));
 		return q;
 	}
 
@@ -231,7 +233,7 @@ queue *dequeue(queue *q, void *data)
 			return NULL;
 		}
 
-		acquire_lock(&mutex_lock);
+		acquire_lock(&(src->mutex_lock));
   // Iterate through original queue and copy nodes
   node *currentOriginalNode = src->head;
   node *previousNewNode = NULL;
@@ -241,7 +243,7 @@ queue *dequeue(queue *q, void *data)
     currentOriginalNode = currentOriginalNode->next;
   }
 
-	release_lock(&mutex_lock);
+	release_lock(&(src->mutex_lock));
   return newQueue;
 }
 
